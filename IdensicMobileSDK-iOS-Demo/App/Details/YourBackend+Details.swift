@@ -50,7 +50,7 @@ extension YourBackend {
             return
         }
         
-        get("/resources/auth/-/isLoggedIn") { (error, json, statusCode) in
+        get("/resources/dashboard/auth/me/-/isLoggedIn") { (error, json, statusCode) in
          
             if let error = error {
                 onComplete(error, false)
