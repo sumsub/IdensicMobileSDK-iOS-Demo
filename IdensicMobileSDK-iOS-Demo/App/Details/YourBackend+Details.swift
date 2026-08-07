@@ -74,16 +74,7 @@ extension YourBackend {
             return
         }
         
-        var path: String = "/resources/accessTokens?&userId=\(userId.urlQueryEncoded)&ttlInSecs=600"
-        
-        if let levelName = Storage.levelName {
-            path = path + "&levelName=\(levelName.urlQueryEncoded)"
-        }
-        if let externalActionId = user?.externalActionId {
-            path = path + "&externalActionId=\(externalActionId.urlQueryEncoded)"
-        }
-        
-        post(path) { (error, json, statusCode) in
+        let onResponse: ResponseCallback = { (error, json, statusCode) in
 
             if statusCode == 401 {
                 App.checkAutorizationStatus()
@@ -98,6 +89,36 @@ extension YourBackend {
             else {
                 onComplete(NSError("Unable to get access token"), nil)
             }
+        }
+
+        if bearerToken != nil {
+
+            var json: Json = [
+                "userId": userId,
+                "ttlInSecs": 600,
+            ]
+
+            if let levelName = Storage.levelName {
+                json["levelName"] = levelName
+            }
+            if let externalActionId = user?.externalActionId {
+                json["externalActionId"] = externalActionId
+            }
+
+            post("/resources/dashboard/accessTokens/sdk", json, onComplete: onResponse)
+        }
+        else {
+
+            var path: String = "/resources/accessTokens?&userId=\(userId.urlQueryEncoded)&ttlInSecs=600"
+
+            if let levelName = Storage.levelName {
+                path = path + "&levelName=\(levelName.urlQueryEncoded)"
+            }
+            if let externalActionId = user?.externalActionId {
+                path = path + "&externalActionId=\(externalActionId.urlQueryEncoded)"
+            }
+
+            post(path, onComplete: onResponse)
         }
     }
 
